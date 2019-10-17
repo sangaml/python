@@ -14,10 +14,19 @@ if a=='exists':
             "3. Append the content to file:"))
     if n==1:
         print("Reading file")
-        print(filename)
         file1 = open(filename, "r")
         contents = file1.read()
         print(contents)
+    elif n==2:
+        content = input("Overwriting file, Enter new contents:")
+        file2 = open('test.py', 'w')
+        file2.write(content)
+    elif n==3:
+        print("Append the content to file")
+        content1 = input("Enter content to add:")
+        file3 = open(filename, 'a+')
+        file3.write(content1)
+        file3.close() 
 
 
 else:
