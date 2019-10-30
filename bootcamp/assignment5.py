@@ -9,11 +9,11 @@ class Vehicle():
         self.weight = weight
         self.year = year
 
-    def NeedsMaintenace(self):
-        pass
+    # def NeedsMaintenace1(self):
+    #     print(self.needsmaintenace)
 
-    def TripSinceMaintenance(self):
-        pass
+    # def TripSinceMaintenance(self):
+    #     pass
 
 class Cars(Vehicle):
 
@@ -24,9 +24,15 @@ class Cars(Vehicle):
     def Drive (self,IsDriving='True'):
         pass
         
-
     def stop (self,IsDriving='False'):
         pass
 
     def repair (self):
         pass
+
+def main():
+    vehi = Vehicle(12,22,33,44)
+    #print(vehi.make)
+    return vehi.NeedsMaintenace1()
+if __name__ == "__main__":
+    main()
