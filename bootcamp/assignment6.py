@@ -20,7 +20,7 @@ songlist = input("Enter your Favourite songs (comma(,)seprated):")
 for slist in songlist.split():
     for olist in defaultlist.splist():
         if slist == olist:   
-        defaultlist.remove
+        slist.remove()
     print(defaultlist)
 
     print ( f"your Favourite songs are {defaultlist}")  
