@@ -1,9 +1,14 @@
-albregistertarget = elb.register_targets(
-    TargetGroupArn=ALB_target_ARN_ID,
-    Targets=[
-        {
-            'Id': web_instance_id,
-            'Port': 80,
-        },
-    ]
+volume = ec2.create_volume(
+    AvailabilityZone='ap-southeast-1c',
+    Encrypted=False,
+    Size=123,
+    VolumeType='standard',
+)
+
+
+response = client.attach_volume(
+    Device='string',
+    InstanceId='string',
+    VolumeId='string',
+    DryRun=True|False
 )
