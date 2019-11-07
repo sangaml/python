@@ -53,3 +53,26 @@ perms = [{
 
 sg.authorize_ingress(IpPermissions=perms)
 
+jump_sg_rule = ec2.authorize_security_group_ingress(
+    GroupId=jump_sg_id,
+    GroupName='string',
+    IpPermissions=[
+        {
+            'FromPort': 22,
+            'IpProtocol': 'TCP',
+            'IpRanges': [
+                {
+                    'CidrIp': '0.0.0.0/0',
+                    'Description': 'open ssh port'
+                },
+            ],
+            'ToPort': 22
+        },
+    ],
+    IpProtocol='string',
+    SourceSecurityGroupName='string',
+    SourceSecurityGroupOwnerId='string',
+    ToPort=123,
+    DryRun=True|False
+)
+
