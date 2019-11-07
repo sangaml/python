@@ -27,7 +27,7 @@ ec2.create_tags(Resources=[subnetid1],Tags=[{"Key": "Name", "Value": "Public"}])
 
 # ---------------------Creating Subnet2-------------------------
 print("Creating Private Subnet...")
-Subnet2 = ec2.create_subnet(CidrBlock='10.0.2.0/24',VpcId=vpcid)
+Subnet2 = ec2.create_subnet(AvailabilityZone='ap-southeast-1c',CidrBlock='10.0.2.0/24',VpcId=vpcid)
 time.sleep(2)
 subnetid2 = (Subnet2['Subnet']['SubnetId'])
 ec2.create_tags(Resources=[subnetid2],Tags=[{"Key": "Name", "Value": "Private"}])
@@ -253,6 +253,7 @@ Load_Balancer = elb.create_load_balancer(
     Name='FrontEnd-ALB',
     Subnets=[
         subnetid1,
+        subnetid2,
         subnetid3
     ],
     SecurityGroups=[
