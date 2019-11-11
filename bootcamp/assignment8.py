@@ -1,78 +1,54 @@
+'''
+Automation scripts
+Script I 
+- Write a python script to take the snapshot of volumes attached to the instance in the previous step.
+- This script should tag the snapshot created using VM name + current timestamp. For e.g. Web Server + Timestamp
+- In addition to this it should also perform snapshot retention task. Retention period 1 hour. All the snapshots older than that should be deleted.
+
+Script II
+- Write a script in python to shutdown the servers present in the infrastructure based on their tag.
+- The servers which has tag as "Env=Dev" should be stopped.
+- Create a list of stopped servers and upload it in to storage bucket for audit purpose. 
+
+'''
+#--------------------Script 1 -----------------
 import boto3
+import time
+
+from datetime import datetime
+now = datetime.now()
+creation_time = now.strftime("%H:%M:%S")
 
 ec2 = boto3.client('ec2')
-
-
-import boto3  
-#ec2 = boto3.resource('ec2')
-ec2 = boto3.client('ec2')
-vpc = ec2.create_vpc(CidrBlock='10.0.0.0/16')
-#vpc.wait_until_available()
-#return vpc
-subnet1 = vpc.create_subnet(CidrBlock='10.0.0.0/24')
-#IG
-#return vpc
-internet_gateway = ec2.create_internet_gateway()  
-internet_gateway.attach_to_vpc(VpcId=vpc.vpc_id)
-##Route Table
-#return vpc
-route_table = vpc.create_route_table()
-route_ig_ipv4 = route_table.create_route(DestinationCidrBlock='0.0.0.0/0', GatewayId=internet_gateway.internet_gateway_id)  
-
-route_table.associate_with_subnet(SubnetId=subnet1.id)
-##########SG
-sg = vpc.create_security_group(GroupName="sample-name", Description="A sample description")
-
-ip_ranges = [{
-    'CidrIp': '0.0.0.0/0'
-}]
-
-ip_v6_ranges = [{
-    'CidrIpv6': '::/0'
-}]
-
-perms = [{
-    'IpProtocol': 'TCP',
-    'FromPort': 80,
-    'ToPort': 80,
-    'IpRanges': ip_ranges,
-    'Ipv6Ranges': ip_v6_ranges
-}, {
-    'IpProtocol': 'TCP',
-    'FromPort': 443,
-    'ToPort': 443,
-    'IpRanges': ip_ranges,
-    'Ipv6Ranges': ip_v6_ranges
-}, {
-    'IpProtocol': 'TCP',
-    'FromPort': 22,
-    'ToPort': 22,
-    'IpRanges': ip_ranges, # Remember to change this!
-    'Ipv6Ranges': ip_v6_ranges # Remember to change this!
-}]
-
-sg.authorize_ingress(IpPermissions=perms)
-
-jump_sg_rule = ec2.authorize_security_group_ingress(
-    GroupId=jump_sg_id,
-    GroupName='string',
-    IpPermissions=[
-        {
-            'FromPort': 22,
-            'IpProtocol': 'TCP',
-            'IpRanges': [
-                {
-                    'CidrIp': '0.0.0.0/0',
-                    'Description': 'open ssh port'
-                },
-            ],
-            'ToPort': 22
-        },
-    ],
-    IpProtocol='string',
-    SourceSecurityGroupName='string',
-    SourceSecurityGroupOwnerId='string',
-    ToPort=123,
-    DryRun=True|False
+response = ec2.describe_instances(
+InstanceIds=[
+        'i-0d00216f7e9e2f3cc'
+    ]
 )
+test = (response['Reservations'])
+for i in test:
+    test1 = (i['Instances'])
+    for j in test1:
+        name = (j['Tags'])
+        volume = (j['BlockDeviceMappings'])
+        for k, l in zip(volume, name):
+            device = (k['DeviceName'])
+            volumeid = (k['Ebs']['VolumeId'])
+            instancename = (l['Value'])
 
+#-------------Creating Snapshot
+response = ec2.create_snapshot(
+    VolumeId=volumeid
+)
+snapshotid = (response['SnapshotId'])
+creationdate = (response['ResponseMetadata']['HTTPHeaders']['date'])
+ec2.create_tags(Resources=[snapshotid],Tags=[{"Key": "Name", "Value": instancename + creationdate}])
+
+#------------Delete Snapshot-----------
+now = datetime.now()
+current_time = now.strftime("%H:%M:%S")
+retentionp = '01:00:00'
+if (current_time - creation_time) >= (retentionp):
+    response = ec2.delete_snapshot(
+    SnapshotId=snapshotid
+)

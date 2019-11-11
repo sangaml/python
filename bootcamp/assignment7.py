@@ -20,6 +20,7 @@ ec2 = boto3.client('ec2')
 print("Creating VPC...")
 vpc = ec2.create_vpc(CidrBlock='10.0.0.0/16',InstanceTenancy='default')
 time.sleep(2)
+print(vpc)
 vpcid = (vpc['Vpc']['VpcId'])
 
 ec2.create_tags(Resources=[vpcid],Tags=[{"Key": "Name", "Value": "custom_vpc"}])
