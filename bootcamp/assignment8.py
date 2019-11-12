@@ -12,43 +12,62 @@ Script II
 
 '''
 #--------------------Script 1 -----------------
+instanceid = input("Enter Instance id to start snapshot creation:")
 import boto3
-import time
-
+import datetime
+from datetime import timedelta
 from datetime import datetime
-now = datetime.now()
-creation_time = now.strftime("%H:%M:%S")
-
 ec2 = boto3.client('ec2')
-response = ec2.describe_instances(
-InstanceIds=[
-        'i-0d00216f7e9e2f3cc'
-    ]
-)
-test = (response['Reservations'])
-for i in test:
-    test1 = (i['Instances'])
-    for j in test1:
-        name = (j['Tags'])
-        volume = (j['BlockDeviceMappings'])
-        for k, l in zip(volume, name):
-            device = (k['DeviceName'])
-            volumeid = (k['Ebs']['VolumeId'])
-            instancename = (l['Value'])
+#------------------Retrieving ec2 instance info -----------------------
+def Creating_snapshot(instanceid):
 
-#-------------Creating Snapshot
-response = ec2.create_snapshot(
-    VolumeId=volumeid
-)
-snapshotid = (response['SnapshotId'])
-creationdate = (response['ResponseMetadata']['HTTPHeaders']['date'])
-ec2.create_tags(Resources=[snapshotid],Tags=[{"Key": "Name", "Value": instancename + creationdate}])
+    instance_info = ec2.describe_instances(
+    InstanceIds=[
+            instanceid
+        ]
+    )
+    test = (instance_info['Reservations'])
+    for i in test:
+        test1 = (i['Instances'])
+        for j in test1:
+            name = (j['Tags'])
+            volume = (j['BlockDeviceMappings'])
+            for k, l in zip(volume, name):
+                volumeid = (k['Ebs']['VolumeId'])
+                instancename = (l['Value'])
 
-#------------Delete Snapshot-----------
-now = datetime.now()
-current_time = now.strftime("%H:%M:%S")
-retentionp = '01:00:00'
-if (current_time - creation_time) >= (retentionp):
-    response = ec2.delete_snapshot(
-    SnapshotId=snapshotid
-)
+    #-------------Creating Snapshot------------------------------
+    creating_snapshot = ec2.create_snapshot(
+        VolumeId=volumeid
+    )
+    snapshotid = (creating_snapshot['SnapshotId'])
+    creationdate = (creating_snapshot['ResponseMetadata']['HTTPHeaders']['date'])
+    ec2.create_tags(Resources=[snapshotid],Tags=[{"Key": "Name", "Value": instancename + creationdate}])
+
+
+#------------------- Delete Snapshot & Retrieving Snapshots info-----------------------
+def Delete_snapshot(snapshotid):
+    nowo = str(datetime.utcnow())
+    nowt = str(nowo[:19])
+
+    response = ec2.describe_snapshots(
+        SnapshotIds=[
+            snapshotid
+        ]
+    )
+    datetimeFormat = '%Y-%m-%d %H:%M:%S'
+    a = (response['Snapshots'])
+    for s in a:
+        b = str(s['StartTime'])
+        new = (b[:19])
+        test22 = str(datetime.strptime(new, datetimeFormat))
+
+    diff = datetime.strptime(nowt, datetimeFormat)\
+        - datetime.strptime(test22, datetimeFormat)
+
+    print("Seconds:", diff.seconds)
+
+    if diff.second >= 3600:
+        del_snapshot = ec2.delete_snapshot(
+        SnapshotId=snapshotid
+        )
