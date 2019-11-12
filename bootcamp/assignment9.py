@@ -1,37 +1,22 @@
-import datetime
-import time
-from datetime import timedelta
 import boto3
-#import time
-import datetime
-from datetime import timedelta
 
-from datetime import datetime
+s3 = boto3.client('s3')
 
-datetimeFormat = '%Y-%m-%d %H:%M:%S.%f'
-date1 = '2016-04-16 10:01:28.585'
-date2 = '2016-03-10 09:56:28.067'
-diff = datetime.datetime.strptime(date1, datetimeFormat)\
-    - datetime.datetime.strptime(date2, datetimeFormat)
-print(diff)
-print("Difference:", diff)
-print("Days:", diff.days)
-print("Microseconds:", diff.microseconds)
-print("Seconds:", diff.seconds)
-import time
-import pytz  # 3rd party: $ pip install pytz
-import datetime
-u = datetime.now()
-u = u.replace(tzinfo=pytz.utc) #NOTE: it works only with a fixed utc offset
-print(u)
-# import boto3
-# #import time
-# import datetime
-# from datetime import timedelta
+create_s3 = s3.create_bucket(ACL='private',Bucket='mybucketsangamdevguru',CreateBucketConfiguration={'LocationConstraint': 'ap-south-1' })
+print(create_s3)
 
-# from datetime import datetime
+f= open("guru99.txt","w+")
+for i in range(10):
+     f.write("This is line %d\r\n" % (i+1))
+# print(all_instanceIds)
+# print(all_state)
+# print(all_tag)
+# if tag == 'Dev':
+#     if state == 'stop':
+#         print('Match Found, Deleting vm....')
+#         stopvm = ec2.terminate_instances(InstanceIds=[instanceIds])
+# else:
+#     print("No Match Found")
+        
 
-# nowo = str(datetime.now())
-# nowt = str(nowo[:19])
-# print("------------------------")
-# print(nowt)
+        

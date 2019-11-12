@@ -11,7 +11,7 @@ Script II
 - Create a list of stopped servers and upload it in to storage bucket for audit purpose. 
 
 '''
-#--------------------Script 1 -----------------
+###########################  Script 1 ##################################3
 instanceid = input("Enter Instance id to start snapshot creation:")
 import boto3
 import datetime
@@ -71,3 +71,69 @@ def Delete_snapshot(snapshotid):
         del_snapshot = ec2.delete_snapshot(
         SnapshotId=snapshotid
         )
+
+
+##################################### Script II ##################################
+
+import boto3
+
+ec2 = boto3.client('ec2')
+vms = ec2.describe_instances()
+a = (vms['Reservations'])
+for i in a:
+    j = (i['Instances'])
+    for k in j:
+        instanceIds = (k['InstanceId'])
+        l = (k['Tags'])
+        state = (k['State']['Name'])
+        for m in l:
+            tag = (m['Value'])
+
+if tag == 'Dev':
+    if state == 'running':
+        print('Match Found, Deleting vm....')
+        stopvm = ec2.terminate_instances(InstanceIds=[instanceIds])
+else:
+    print("No Match Found")
+
+#-------------------Copy Data to S3-------------------
+
+import boto3
+all_state = []
+all_instanceIds = []
+all_tag = []
+all_info = []
+ec2 = boto3.client('ec2')
+vms = ec2.describe_instances()
+a = (vms['Reservations'])
+for i in a:
+    j = (i['Instances'])
+    for k in j:
+        instanceIds = (k['InstanceId'])
+        all_instanceIds.append(instanceIds)
+        l = (k['Tags'])
+        state = (k['State']['Name'])
+        all_state.append(state)
+        for m in l:
+            tag = (m['Value'])
+            all_tag.append(tag)
+            #print(state)
+            if state == 'stopped':
+                info = (instanceIds + " " +state + "  " + tag)
+                all_info.append(info)
+#-------------------Puting data on s3----------------------
+nowo = str(datetime.utcnow())
+nowt = str(nowo[:10])
+bucket='mystoppedec2status'
+bucketname = str(bucket + nowt)
+#-------Creating bucket----------------
+s3 = boto3.client('s3')
+create_s3 = s3.create_bucket(ACL='private',Bucket=bucketname,CreateBucketConfiguration={'LocationConstraint': 'ap-south-1' })
+#--------------copying data to bucket---------
+putbucket = s3.put_object(
+    ACL='private',
+    Body=all_info,
+    Bucket=bucketname,
+    Key='testing',
+    StorageClass='STANDARD'
+)
